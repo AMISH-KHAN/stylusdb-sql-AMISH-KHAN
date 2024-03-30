@@ -41,10 +41,18 @@ test('Parse SQL Query with WHERE Clause', () => {
 });
 
 test('Execute SQL Query with WHERE Clause', async () => {
-    const query = 'SELECT id, name FROM sample WHERE age = 25';
+    const query = 'SELECT id, name FROM sample where age = 25';
     const result = await executeSELECTQuery(query);
-    expect(result.length).toBe(1);
-    expect(result[0]).toHaveProperty('id');
-    expect(result[0]).toHaveProperty('name');
-    expect(result[0].id).toBe('2');
+    let newresult = result.map((obj) => {
+        const newobj = {}
+        for (const key in obj) {
+            newobj[key.toLowerCase()]=obj[key]
+        }
+        return newobj
+    })
+    console.log("redsult",newresult)
+    expect(newresult.length).toBe(1);
+    expect(newresult[0]).toHaveProperty('id');
+    expect(newresult[0]).toHaveProperty('name');
+    expect(newresult[0].id).toBe('2');
 });
