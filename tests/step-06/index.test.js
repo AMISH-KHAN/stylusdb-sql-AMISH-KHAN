@@ -59,11 +59,13 @@ test('Parse SQL Query with Multiple WHERE Clauses', () => {
     expect(parsed).toEqual({
         fields: ['id', 'name'],
         table: 'sample',
-        whereClauses: [{
+        whereClauses: [
+            {
             "field": "age",
             "operator": "=",
             "value": "30",
-        }, {
+        },
+            {
             "field": "name",
             "operator": "=",
             "value": "John",
