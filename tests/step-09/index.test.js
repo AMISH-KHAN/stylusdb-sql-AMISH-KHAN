@@ -1,5 +1,5 @@
 const readCSV = require('../../src/csvReader');
-const {parseQuery} = require('../../src/queryParser');
+const {parseQuery,parseJoinClause} = require('../../src/queryParser');
 const executeSELECTQuery = require('../../src/index');
 
 test('Read CSV File', async () => {
@@ -13,13 +13,17 @@ test('Read CSV File', async () => {
 test('Parse SQL Query', () => {
     const query = 'SELECT id, name FROM student';
     const parsed = parseQuery(query);
+    console.log(parsed)
     expect(parsed).toEqual({
         fields: ['id', 'name'],
         table: 'student',
         whereClauses: [],
         joinCondition: null,
         joinTable: null,
-        joinType: null
+        joinType: null,
+        groupByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null
     });
 });
 
@@ -46,7 +50,10 @@ test('Parse SQL Query with WHERE Clause', () => {
         }],
         joinCondition: null,
         joinTable: null,
-        joinType: null
+        joinType: null,
+        groupByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null
     });
 });
 
@@ -76,7 +83,10 @@ test('Parse SQL Query with Multiple WHERE Clauses', () => {
         }],
         joinCondition: null,
         joinTable: null,
-        joinType: null
+        joinType: null,
+        groupByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null
     });
 });
 
@@ -110,7 +120,10 @@ test('Parse SQL Query with INNER JOIN', async () => {
         whereClauses: [],
         joinTable: 'enrollment',
         joinCondition: { left: 'student.id', right: 'enrollment.student_id' },
-        joinType: 'INNER'
+        joinType: 'INNER',
+        groupByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null
     })
 });
 
@@ -123,7 +136,10 @@ test('Parse SQL Query with INNER JOIN and WHERE Clause', async () => {
         whereClauses: [{ field: 'student.age', operator: '>', value: '20' }],
         joinTable: 'enrollment',
         joinCondition: { left: 'student.id', right: 'enrollment.student_id' },
-        joinType: 'INNER'
+        joinType: 'INNER',
+        groupByFields: null,
+        hasAggregateWithoutGroupBy: false,
+        orderByFields: null
     })
 });
 
