@@ -817,6 +817,7 @@ test('Execute SQL Query with LIKE Operator and DISTINCT', async () => {
 test('LIKE with ORDER BY and LIMIT', async () => {
     const query = "SELECT name FROM student WHERE name LIKE '%a%' ORDER BY name ASC LIMIT 2";
     const result = await executeSELECTQuery(query);
+    
     // Expecting the first two names alphabetically that contain 'a'
     expect(result).toEqual([{ name: 'Alice' }, { name: 'Jane' }]);
 });
