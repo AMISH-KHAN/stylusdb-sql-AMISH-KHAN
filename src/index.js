@@ -1,7 +1,7 @@
 // src/index.js
 
-const  { parseQuery} = require('./queryParser');
-const readCSV = require('./csvReader');
+const  { parseSelectQuery,parseInsertQuery,parseDeleteQuery} = require('./queryParser');
+const {readCSV, writeCSV} = require('./csvReader');
 
 
 function evaluateCondition(row, clause) {
@@ -223,7 +223,7 @@ function aggregatedOperations(aggregateFunction, rows) {
   
 async function executeSELECTQuery(query) {
     try {
-        const { fields, table, whereClauses, joinType, joinTable, joinCondition, groupByFields, orderByFields, limit,isDistinct, hasAggregateWithoutGroupBy } = parseQuery(query)
+        const { fields, table, whereClauses, joinType, joinTable, joinCondition, groupByFields, orderByFields, limit,isDistinct, hasAggregateWithoutGroupBy } = parseSelectQuery(query)
    
         let data = await readCSV(`${table}.csv`);
         
@@ -305,5 +305,55 @@ async function executeSELECTQuery(query) {
       throw new Error(`Error executing query: ${error.message}`);
     }
   }
+  async function executeINSERTQuery(query) {
+    const { table, columns, values, returningColumns } = parseInsertQuery(query);
+    const data = await readCSV(`${table}.csv`);
 
-module.exports = executeSELECTQuery;
+    
+    const headers = data.length > 0 ? Object.keys(data[0]) : columns;
+    const newRow = {};
+    headers.forEach(header => {
+        const columnIndex = columns.indexOf(header);
+        if (columnIndex !== -1) {
+            let value = values[columnIndex];
+            if (value.startsWith("'") && value.endsWith("'")) {
+                value = value.substring(1, value.length - 1);
+            }
+            newRow[header] = value;
+        } else {
+            newRow[header] = header === 'id' ? newId.toString() : '';
+        }
+    });
+
+    data.push(newRow);
+
+    await writeCSV(`${table}.csv`, data);
+
+    let returningResult = {};
+    if (returningColumns.length > 0) {
+        returningColumns.forEach(column => {
+            returningResult[column] = newRow[column];
+        });
+    }
+
+    return {
+        returning: returningResult
+    };
+}
+
+async function executeDELETEQuery(query) {
+    const { table, whereClause } = parseDeleteQuery(query);
+    let data = await readCSV(`${table}.csv`);
+
+    if (whereClause.length > 0) {
+        data = data.filter(row => !whereClause.every(clause => evaluateCondition(row, clause)));
+    } else {
+        data = [];
+    }
+
+    await writeCSV(`${table}.csv`, data);
+
+    return { message: "Rows deleted successfully." };
+}
+
+module.exports = {executeSELECTQuery, executeINSERTQuery, executeDELETEQuery};
